@@ -4,8 +4,7 @@ import TaskInput from "./components/TaskInput";
 import FilterMenu from "./components/FilterMenu";
 import TaskList from "./components/TaskList";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api/tasks";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
