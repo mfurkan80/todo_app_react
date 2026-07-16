@@ -75,7 +75,6 @@ const Login = ({ setToken, onSwitch }) => {
 
           <button
             type="submit"
-            onClick={onSwitch}
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition-colors mt-2"
           >
             Sign In
