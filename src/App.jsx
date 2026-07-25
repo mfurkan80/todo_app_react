@@ -127,18 +127,6 @@ const App = () => {
   );
 };
 
-export async function dashboardLoader() {
-  try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error("Görevler sunucudan çekilemedi.");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Loader Hatası:", error);
-    return []; // Hata durumunda boş liste döner, uygulama çökmez
-  }
-}
-
 // --- App Componentinin Bitişi ---
 
 // 1. Gerçek API'den Veri Çekme (Loader)
