@@ -93,6 +93,7 @@ const App = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    Navigate("/");
   };
 
   /* if (!token) {
@@ -127,9 +128,6 @@ const App = () => {
   );
 };
 
-// --- App Componentinin Bitişi ---
-
-// 1. Gerçek API'den Veri Çekme (Loader)
 export const dashboardLoader = async () => {
   const token = localStorage.getItem("token");
   if (!token) return []; // Giriş yapılmamışsa boş liste dön
