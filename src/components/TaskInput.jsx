@@ -1,20 +1,36 @@
-const TaskInput = ({ inputValue, setInputValue, addTask }) => {
+import { useState } from "react";
+import { Form } from "react-router";
+
+const TaskInput = () => {
+  const [inputValue, setInputValue] = useState("");
+
   return (
-    <div className="flex w-full max-w-md mb-8 shadow-lg">
+    <Form
+      method="post"
+      className="w-full max-w-xl px-4 flex gap-2 mb-6"
+      onSubmit={() => {
+        setTimeout(() => setInputValue(""), 10);
+      }}
+    >
+      <input type="hidden" name="intent" value="add" />
+
       <input
         type="text"
-        placeholder="Add Task..."
+        name="title"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        className="flex-1 bg-gray-800 text-white px-4 py-3 rounded-l-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-gray-400"
+        placeholder="Add a new task..."
+        className="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500"
+        required
       />
+
       <button
-        onClick={addTask}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-r-lg transition-colors"
+        type="submit"
+        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition-colors"
       >
-        Add Task
+        Add
       </button>
-    </div>
+    </Form>
   );
 };
 

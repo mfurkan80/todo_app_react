@@ -1,49 +1,71 @@
-const TaskList = ({ filteredTasks, toggleTask, deleteTask }) => {
-  return (
-    <ul className="w-full max-w-md flex flex-col gap-3">
-      {filteredTasks.length === 0 && (
-        <div className="text-center py-10 text-gray-500">
-          <p className="text-lg">Buralar şimdilik çok ıssız...</p>
-          <p className="text-sm mt-1">
-            Yeni bir görev ekleyerek başlayabilirsin.
-          </p>
-        </div>
-      )}
+import { useFetcher, useLoaderData } from "react-router";
 
-      {filteredTasks.map((task) => (
-        <li
-          key={task.id}
-          className={`flex items-center bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-700 transition-all ${
-            task.is_completed ? "opacity-60" : "hover:border-blue-500"
-          }`}
-        >
-          {/* Checkbox */}
+const TaskItem = ({ task }) => {
+  const fetcher = useFetcher();
+
+  return (
+    <div className="flex items-center justify-between bg-[#1e293b] p-4 rounded-lg border border-gray-700 mb-3">
+      {/* Tamamlama (Toggle) İşlemi */}
+      <div className="flex items-center gap-3">
+        <fetcher.Form method="post">
+          <input type="hidden" name="intent" value="toggle" />
+          <input type="hidden" name="id" value={task.id} />
+
+          {/* Backend'e yeni durumu iletmek için eklediğimiz satır: */}
+          <input type="hidden" name="new_status" value={!task.is_completed} />
+
           <input
             type="checkbox"
-            checked={!!task.is_completed}
-            onChange={() => toggleTask(task.id)}
-            className="w-5 h-5 accent-blue-500 cursor-pointer"
+            checked={task.is_completed}
+            className="w-5 h-5 cursor-pointer rounded border-gray-600 bg-gray-700"
+            onChange={(e) => e.target.form.requestSubmit()}
           />
+        </fetcher.Form>
+        <span
+          className={
+            task.is_completed ? "line-through text-gray-500" : "text-gray-200"
+          }
+        >
+          {task.title}
+        </span>
+      </div>
 
-          {/* Görev Metni */}
-          <span
-            className={`flex-1 ml-4 text-lg transition-colors ${
-              task.is_completed ? "line-through text-gray-500" : "text-gray-200"
-            }`}
-          >
-            {task.title}
-          </span>
+      {/* Silme (Delete) İşlemi */}
+      <fetcher.Form method="post">
+        <input type="hidden" name="intent" value="delete" />
+        <input type="hidden" name="id" value={task.id} />
+        <button
+          type="submit"
+          className="text-red-400 bg-red-900/20 hover:bg-red-900/40 border border-red-900/50 px-4 py-1.5 rounded transition-colors"
+        >
+          Delete
+        </button>
+      </fetcher.Form>
+    </div>
+  );
+};
 
-          {/* Silme Butonu */}
-          <button
-            onClick={() => deleteTask(task.id)}
-            className="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded transition-colors text-sm font-medium"
-          >
-            Delete
-          </button>
-        </li>
+// 2. LİSTE BİLEŞENİ (Döngüyü kurduğumuz asıl yer)
+const TaskList = () => {
+  // Router'ın Loader'ından verileri çekiyoruz
+  const tasks = useLoaderData();
+
+  // Eğer henüz hiç görev yoksa
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="text-gray-400 mt-4 text-center">
+        No tasks found. Add one above!
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-xl">
+      {/* Görev dizisini dönüp her biri için bir TaskItem oluşturuyoruz */}
+      {tasks.map((task) => (
+        <TaskItem key={task.id} task={task} />
       ))}
-    </ul>
+    </div>
   );
 };
 
