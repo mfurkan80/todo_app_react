@@ -56,7 +56,7 @@ const App = () => {
   const handleLogout = () => {
     localStorage.removeItem("token"); // Token'ı çöpe at
     setToken(null);
-    navigate("/login"); // React Router'a "Login sayfasına git" emrini ver
+    navigate("/"); // React Router'a "Login sayfasına git" emrini ver
   };
 
   return (
