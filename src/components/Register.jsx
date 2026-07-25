@@ -1,34 +1,36 @@
+import {
+  Form,
+  redirect,
+  useActionData,
+  useNavigation,
+  Link,
+} from "react-router";
 import axios from "axios";
-import { useState } from "react";
 
-const Register = ({ onSwitch }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // Başarılı kayıt mesajı için
+export const registerAction = async ({ request }) => {
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  try {
+    await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
+      email: data.email,
+      password: data.password,
+    });
 
-    try {
-      await axios.post("https://api.todoapp.furkansahin.me/register", {
-        email,
-        password,
-      });
+    return redirect("/login");
+  } catch (err) {
+    return {
+      error:
+        err.response?.data?.message ||
+        "Could not connect to the server, please try again later.",
+    };
+  }
+};
 
-      setSuccess("Account created successfully! You can now sign in.");
-      setEmail("");
-      setPassword("");
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message);
-      } else {
-        setError("Could not connect to the server, please try again later.");
-      }
-    }
-  };
+const Register = () => {
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -37,27 +39,20 @@ const Register = ({ onSwitch }) => {
           Sign Up
         </h2>
 
-        {error && (
+        {actionData?.error && (
           <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded mb-4 text-sm text-center">
-            {error}
+            {actionData.error}
           </div>
         )}
 
-        {success && (
-          <div className="bg-green-500/10 border border-green-500 text-green-400 p-3 rounded mb-4 text-sm text-center">
-            {success}
-          </div>
-        )}
-
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+        <Form method="post" className="flex flex-col gap-4">
           <div>
             <label className="block text-gray-300 mb-2 text-sm font-medium">
               Email:
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
               required
               placeholder="example@email.com"
               className="w-full p-3 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all"
@@ -70,8 +65,7 @@ const Register = ({ onSwitch }) => {
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
               required
               placeholder="••••••••"
               minLength="6"
@@ -81,20 +75,20 @@ const Register = ({ onSwitch }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition-colors mt-2"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition-colors mt-2 disabled:opacity-50"
           >
-            Create Account
+            {isSubmitting ? "Creating Account..." : "Create Account"}
           </button>
-        </form>
+        </Form>
         <p className="mt-6 text-center text-gray-400 text-sm">
           Already have an account?{" "}
-          <button
-            type="button"
-            onClick={onSwitch}
+          <Link
+            to="/login"
             className="text-blue-400 hover:text-blue-300 font-bold"
           >
             Sign In
-          </button>
+          </Link>
         </p>
       </div>
     </div>

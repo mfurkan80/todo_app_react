@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import App, { dashboardAction, dashboardLoader } from "./App.jsx";
 import Login from "./components/Login.jsx";
 import "./index.css";
+import Register, { registerAction } from "./components/Register.jsx";
 
 const router = createBrowserRouter([
   {
@@ -14,6 +15,11 @@ const router = createBrowserRouter([
     element: <App />,
     loader: dashboardLoader,
     action: dashboardAction,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+    action: registerAction,
   },
 ]);
 
