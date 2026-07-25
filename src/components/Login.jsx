@@ -1,11 +1,14 @@
 import axios from "axios";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Yönlendirme işlemi için useNavigate hook'unu çağırıyoruz
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -22,7 +25,14 @@ const Login = ({ setToken }) => {
 
       const token = response.data.token;
       localStorage.setItem("token", token);
-      setToken(token);
+
+      // Eğer App.jsx'ten setToken prop'u geliyorsa güncelle
+      if (setToken) {
+        setToken(token);
+      }
+
+      // BAŞARILI GİRİŞ: Kullanıcıyı ana sayfaya (veya dashboard rotan neyse oraya) yönlendir
+      navigate("/dashboard");
     } catch (err) {
       if (err.response) {
         setError(err.response.data.message);

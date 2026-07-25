@@ -17,7 +17,7 @@ export const registerAction = async ({ request }) => {
       password: data.password,
     });
 
-    return redirect("/login");
+    return redirect("/");
   } catch (err) {
     return {
       error:
@@ -83,10 +83,7 @@ const Register = () => {
         </Form>
         <p className="mt-6 text-center text-gray-400 text-sm">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-400 hover:text-blue-300 font-bold"
-          >
+          <Link to="/" className="text-blue-400 hover:text-blue-300 font-bold">
             Sign In
           </Link>
         </p>
