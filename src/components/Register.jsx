@@ -11,13 +11,19 @@ export const registerAction = async ({ request }) => {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
 
+  // VITE_API_URL içindeki "/api/tasks" kısmını temizleyip ana Backend adresini buluyoruz.
+  // Örn: https://api.todoapp.furkansahin.me/api/tasks -> https://api.todoapp.furkansahin.me
+  const BASE_URL = import.meta.env.VITE_API_URL.replace("/api/tasks", "");
+
   try {
-    await axios.post(`${import.meta.env.VITE_API_URL}/register`, {
+    // Artık istek doğru yere gidiyor: https://api.todoapp.furkansahin.me/register
+    await axios.post(`${BASE_URL}/register`, {
       email: data.email,
       password: data.password,
     });
 
-    return redirect("/");
+    // Kayıt başarılıysa kullanıcıyı giriş yapması için login'e yönlendir
+    return redirect("/login");
   } catch (err) {
     return {
       error:
@@ -83,7 +89,10 @@ const Register = () => {
         </Form>
         <p className="mt-6 text-center text-gray-400 text-sm">
           Already have an account?{" "}
-          <Link to="/" className="text-blue-400 hover:text-blue-300 font-bold">
+          <Link
+            to="/login"
+            className="text-blue-400 hover:text-blue-300 font-bold"
+          >
             Sign In
           </Link>
         </p>
