@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
+import { Link } from "react-router";
 
-const Login = ({ setToken, onSwitch }) => {
+const Login = ({ setToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -82,13 +83,12 @@ const Login = ({ setToken, onSwitch }) => {
         </form>
         <p className="mt-6 text-center text-gray-400 text-sm">
           Don't have an account?{" "}
-          <button
-            type="button"
-            onClick={onSwitch}
+          <Link
+            to="/register"
             className="text-blue-400 hover:text-blue-300 font-bold"
           >
             Sign Up
-          </button>
+          </Link>
         </p>
       </div>
     </div>
