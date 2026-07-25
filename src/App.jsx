@@ -3,19 +3,14 @@ import axios from "axios";
 import TaskInput from "./components/TaskInput";
 import FilterMenu from "./components/FilterMenu";
 import TaskList from "./components/TaskList";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import { useLoaderData } from "react-router";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { useLoaderData, useNavigate } from "react-router"; // useNavigate eklendi
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [showLogin, setShowLogin] = useState(true);
-
-  /*const [tasks, setTasks] = useState([]);*/
   const tasks = useLoaderData();
   const [filter, setFilter] = useState("all");
+
+  const navigate = useNavigate(); // Yönlendirme kancasını başlattık
 
   const filteredTasks = tasks.filter((task) => {
     if (filter === "active") return !task.is_completed;
@@ -31,37 +26,12 @@ const App = () => {
     };
   };
 
-  /* const fetchTasks = async () => {
-    try {
-      const response = await axios.get(API_URL, getAuthHeaders());
-      setTasks(response.data);
-    } catch (error) {
-      console.log("Veriler çekilirken hata oluştu: ", error);
-      if (
-        error.response &&
-        (error.response.status === 401 || error.response.status === 403)
-      ) {
-        handleLogout();
-      }
-    }
-  }; */
-
-  /* const addTask = async () => {
-    if (!inputValue.trim()) return;
-    try {
-      // Veri objesinden sonra virgül koyup bileti ekliyoruz
-      await axios.post(API_URL, { title: inputValue }, getAuthHeaders());
-      setInputValue("");
-      //fetchTasks();
-    } catch (error) {
-      console.log("Eklenirken hata oluştu: ", error);
-    }
-  }; */
-
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`${API_URL}/${id}`, getAuthHeaders());
-      //fetchTasks();
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/${id}`,
+        getAuthHeaders(),
+      );
     } catch (error) {
       console.log("Silinirken hata oluştu: ", error);
     }
@@ -72,41 +42,25 @@ const App = () => {
     if (!currentTask) return;
     try {
       await axios.patch(
-        `${API_URL}/${id}`,
+        `${import.meta.env.VITE_API_URL}/${id}`,
         {
           is_completed: !currentTask.is_completed,
         },
         getAuthHeaders(),
       );
-      //fetchTasks();
     } catch (error) {
       console.log("Güncellenirken hata oluştu: ", error);
     }
   };
 
-  /* useEffect(() => {
-    if (token) {
-      fetchTasks();
-    }
-  }, [token]);*/
-
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("token"); // Token'ı çöpe at
     setToken(null);
-    Navigate("/");
+    navigate("/login"); // React Router'a "Login sayfasına git" emrini ver
   };
-
-  /* if (!token) {
-    if (showLogin) {
-      return <Login setToken={setToken} onSwitch={() => setShowLogin(false)} />;
-    } else {
-      return <Register onSwitch={() => setShowLogin(true)} />;
-    }
-  } */
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-10">
-      {/* Şık bir üst bar ve çıkış yap butonu ekleyelim */}
       <div className="w-full max-w-xl flex justify-between items-center mb-8 px-4">
         <h1 className="text-4xl font-bold text-blue-400">Tasks</h1>
         <button
@@ -128,9 +82,11 @@ const App = () => {
   );
 };
 
+// --- App Componentinin Bitişi ---
+
 export const dashboardLoader = async () => {
   const token = localStorage.getItem("token");
-  if (!token) return []; // Giriş yapılmamışsa boş liste dön
+  if (!token) return [];
 
   try {
     const response = await axios.get(import.meta.env.VITE_API_URL, {
@@ -143,14 +99,12 @@ export const dashboardLoader = async () => {
   }
 };
 
-// 2. Gerçek API'ye Veri Gönderme/Silme/Güncelleme (Action)
 export const dashboardAction = async ({ request }) => {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const token = localStorage.getItem("token");
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Token yoksa işlemi durdur
   if (!token) return null;
 
   const config = {
@@ -166,7 +120,6 @@ export const dashboardAction = async ({ request }) => {
       await axios.delete(`${API_URL}/${id}`, config);
     } else if (intent === "toggle") {
       const id = formData.get("id");
-      // Form'dan gelen değer string'dir, boolean'a çeviriyoruz
       const newStatus = formData.get("new_status") === "true";
       await axios.patch(
         `${API_URL}/${id}`,
@@ -178,7 +131,7 @@ export const dashboardAction = async ({ request }) => {
     console.error("Action Hatası (İşlem yapılamadı):", error);
   }
 
-  return null; // İşlem bitince React Router otomatik olarak loader'ı tekrar tetikler
+  return null;
 };
 
 export default App;
