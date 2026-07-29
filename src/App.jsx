@@ -1,12 +1,11 @@
 import axios from "axios";
 import { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router"; // useNavigate eklendi
+import { redirect, useLoaderData, useNavigate } from "react-router"; // useNavigate eklendi
 import FilterMenu from "./components/FilterMenu";
 import TaskInput from "./components/TaskInput";
 import TaskList from "./components/TaskList";
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const tasks = useLoaderData();
   const [filter, setFilter] = useState("all");
 
@@ -17,41 +16,6 @@ const App = () => {
     if (filter === "completed") return task.is_completed;
     return true;
   });
-
-  const getAuthHeaders = () => {
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  };
-
-  const deleteTask = async (id) => {
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/tasks/${id}`,
-        getAuthHeaders(),
-      );
-    } catch (error) {
-      console.log("Silinirken hata oluştu: ", error);
-    }
-  };
-
-  const toggleTask = async (id) => {
-    const currentTask = tasks.find((t) => t.id === id);
-    if (!currentTask) return;
-    try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_URL}/api/tasks/${id}`,
-        {
-          is_completed: !currentTask.is_completed,
-        },
-        getAuthHeaders(),
-      );
-    } catch (error) {
-      console.log("Güncellenirken hata oluştu: ", error);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("token"); // Token'ı çöpe at
@@ -73,11 +37,7 @@ const App = () => {
 
       <TaskInput />
       <FilterMenu filter={filter} setFilter={setFilter} />
-      <TaskList
-        filteredTasks={filteredTasks}
-        toggleTask={toggleTask}
-        deleteTask={deleteTask}
-      />
+      <TaskList filteredTasks={filteredTasks} />
     </div>
   );
 };
@@ -86,7 +46,9 @@ const App = () => {
 
 export const dashboardLoader = async () => {
   const token = localStorage.getItem("token");
-  if (!token) return [];
+  if (!token) {
+    return redirect("/");
+  }
 
   try {
     const response = await axios.get(
@@ -98,6 +60,12 @@ export const dashboardLoader = async () => {
     return response.data;
   } catch (error) {
     console.error("Loader Hatası (Veri çekilemedi):", error);
+
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      return redirect("/");
+    }
+
     return [];
   }
 };

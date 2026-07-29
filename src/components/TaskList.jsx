@@ -46,12 +46,8 @@ const TaskItem = ({ task }) => {
 };
 
 // 2. LİSTE BİLEŞENİ (Döngüyü kurduğumuz asıl yer)
-const TaskList = () => {
-  // Router'ın Loader'ından verileri çekiyoruz
-  const tasks = useLoaderData();
-
-  // Eğer henüz hiç görev yoksa
-  if (!tasks || tasks.length === 0) {
+const TaskList = ({ filteredTasks }) => {
+  if (!filteredTasks || filteredTasks.length === 0) {
     return (
       <div className="text-gray-400 mt-4 text-center">
         No tasks found. Add one above!
@@ -62,7 +58,7 @@ const TaskList = () => {
   return (
     <div className="w-full max-w-xl">
       {/* Görev dizisini dönüp her biri için bir TaskItem oluşturuyoruz */}
-      {tasks.map((task) => (
+      {filteredTasks.map((task) => (
         <TaskItem key={task.id} task={task} />
       ))}
     </div>

@@ -1,46 +1,40 @@
 import axios from "axios";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useNavigation,
+} from "react-router";
 
-const Login = ({ setToken }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+// Tıpkı Register'da olduğu gibi Login işlemini de Router'a devrediyoruz
+export const loginAction = async ({ request }) => {
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
-  // Yönlendirme işlemi için useNavigate hook'unu çağırıyoruz
-  const navigate = useNavigate();
+  try {
+    const response = await axios.post(`${BASE_URL}/login`, {
+      email: data.email,
+      password: data.password,
+    });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
+    // Başarılı girişte token'ı kaydet ve yönlendir
+    localStorage.setItem("token", response.data.token);
+    return redirect("/dashboard");
+  } catch (err) {
+    return {
+      error:
+        err.response?.data?.message ||
+        "Could not connect to the server, please try again later.",
+    };
+  }
+};
 
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/login`,
-        {
-          email,
-          password,
-        },
-      );
-
-      const token = response.data.token;
-      localStorage.setItem("token", token);
-
-      // Eğer App.jsx'ten setToken prop'u geliyorsa güncelle
-      if (setToken) {
-        setToken(token);
-      }
-
-      // BAŞARILI GİRİŞ: Kullanıcıyı ana sayfaya (veya dashboard rotan neyse oraya) yönlendir
-      navigate("/dashboard");
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message);
-      } else {
-        setError("Could not connect to the server, please try again later.");
-      }
-    }
-  };
+const Login = () => {
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting"; // Butonu pasifleştirmek için
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -49,21 +43,21 @@ const Login = ({ setToken }) => {
           Sign In
         </h2>
 
-        {error && (
+        {actionData?.error && (
           <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded mb-4 text-sm text-center">
-            {error}
+            {actionData.error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        {/* Normal form yerine React Router Form'u kullanıyoruz */}
+        <Form method="post" className="flex flex-col gap-4">
           <div>
             <label className="block text-gray-300 mb-2 text-sm font-medium">
               Email:
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email" /* Name attribute'u action için çok önemli */
               required
               placeholder="example@email.com"
               className="w-full p-3 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all"
@@ -76,8 +70,7 @@ const Login = ({ setToken }) => {
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
               required
               placeholder="••••••••"
               className="w-full p-3 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-all"
@@ -86,11 +79,12 @@ const Login = ({ setToken }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition-colors mt-2"
+            disabled={isSubmitting}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded transition-colors mt-2 disabled:opacity-50"
           >
-            Sign In
+            {isSubmitting ? "Signing In..." : "Sign In"}
           </button>
-        </form>
+        </Form>
         <p className="mt-6 text-center text-gray-400 text-sm">
           Don't have an account?{" "}
           <Link
