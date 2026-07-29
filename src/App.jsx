@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
-import TaskInput from "./components/TaskInput";
-import FilterMenu from "./components/FilterMenu";
-import TaskList from "./components/TaskList";
+import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router"; // useNavigate eklendi
+import FilterMenu from "./components/FilterMenu";
+import TaskInput from "./components/TaskInput";
+import TaskList from "./components/TaskList";
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -29,7 +29,7 @@ const App = () => {
   const deleteTask = async (id) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/tasks/${id}`,
         getAuthHeaders(),
       );
     } catch (error) {
@@ -42,7 +42,7 @@ const App = () => {
     if (!currentTask) return;
     try {
       await axios.patch(
-        `${import.meta.env.VITE_API_URL}/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/tasks/${id}`,
         {
           is_completed: !currentTask.is_completed,
         },
@@ -89,9 +89,12 @@ export const dashboardLoader = async () => {
   if (!token) return [];
 
   try {
-    const response = await axios.get(import.meta.env.VITE_API_URL, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/tasks`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     return response.data;
   } catch (error) {
     console.error("Loader Hatası (Veri çekilemedi):", error);
@@ -103,7 +106,7 @@ export const dashboardAction = async ({ request }) => {
   const formData = await request.formData();
   const intent = formData.get("intent");
   const token = localStorage.getItem("token");
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = `${import.meta.env.VITE_API_URL}/api/tasks`;
 
   if (!token) return null;
 

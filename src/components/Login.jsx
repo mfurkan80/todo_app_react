@@ -16,7 +16,7 @@ const Login = ({ setToken }) => {
 
     try {
       const response = await axios.post(
-        "https://api.todoapp.furkansahin.me/login",
+        `${import.meta.env.VITE_API_URL}/login`,
         {
           email,
           password,
