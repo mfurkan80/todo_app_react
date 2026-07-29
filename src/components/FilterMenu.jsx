@@ -9,7 +9,7 @@ const FilterMenu = ({ filter, setFilter }) => {
             : "text-gray-400 hover:text-white"
         }`}
       >
-        Tümü
+        All
       </button>
       <button
         onClick={() => setFilter("active")}
@@ -19,7 +19,7 @@ const FilterMenu = ({ filter, setFilter }) => {
             : "text-gray-400 hover:text-white"
         }`}
       >
-        Devam Edenler
+        Ongoing
       </button>
       <button
         onClick={() => setFilter("completed")}
@@ -29,7 +29,7 @@ const FilterMenu = ({ filter, setFilter }) => {
             : "text-gray-400 hover:text-white"
         }`}
       >
-        Tamamlananlar
+        Completed
       </button>
     </div>
   );

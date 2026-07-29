@@ -19,7 +19,6 @@ const App = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token"); // Token'ı çöpe at
-    setToken(null);
     navigate("/"); // React Router'a "Login sayfasına git" emrini ver
   };
 
@@ -31,7 +30,7 @@ const App = () => {
           onClick={handleLogout}
           className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
         >
-          Çıkış Yap
+          Log Out
         </button>
       </div>
 
