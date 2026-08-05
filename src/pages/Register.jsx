@@ -20,7 +20,7 @@ export const registerAction = async ({ request }) => {
     });
 
     // Kayıt başarılıysa kullanıcıyı giriş yapması için login'e yönlendir
-    return redirect("/");
+    return redirect("/?registered=true");
   } catch (err) {
     return {
       error:

@@ -24,19 +24,21 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-10">
-      <div className="w-full max-w-xl flex justify-between items-center mb-8 px-4">
-        <h1 className="text-4xl font-bold text-blue-400">Tasks</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
-        >
-          Log Out
-        </button>
-      </div>
+      <div className="w-full max-w-xl px-4 flex flex-col gap-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-4xl font-bold text-blue-400">Tasks</h1>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
+          >
+            Log Out
+          </button>
+        </div>
 
-      <TaskInput />
-      <FilterMenu filter={filter} setFilter={setFilter} />
-      <TaskList filteredTasks={filteredTasks} />
+        <TaskInput />
+        <FilterMenu filter={filter} setFilter={setFilter} />
+        <TaskList filteredTasks={filteredTasks} />
+      </div>
     </div>
   );
 };

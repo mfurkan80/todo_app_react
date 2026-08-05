@@ -5,6 +5,7 @@ import {
   redirect,
   useActionData,
   useNavigation,
+  useSearchParams,
 } from "react-router";
 
 // Tıpkı Register'da olduğu gibi Login işlemini de Router'a devrediyoruz
@@ -35,6 +36,8 @@ const Login = () => {
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting"; // Butonu pasifleştirmek için
+  const [searchParams] = useSearchParams();
+  const isRegistered = searchParams.get("registered") === "true";
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -46,6 +49,11 @@ const Login = () => {
         {actionData?.error && (
           <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded mb-4 text-sm text-center">
             {actionData.error}
+          </div>
+        )}
+        {isRegistered && (
+          <div className="bg-green-500/10 border border-green-500 text-green-400 p-3 rounded mb-4 text-sm text-center">
+            Account created successfully. Please sign in.
           </div>
         )}
 
