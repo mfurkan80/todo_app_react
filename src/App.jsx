@@ -25,14 +25,27 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-10">
       <div className="w-full max-w-xl px-4 flex flex-col gap-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-bold text-blue-400">Tasks</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
-          >
-            Log Out
-          </button>
+        {/* Üst Kısım (Header) Kapsayıcısı */}
+        <div className="flex justify-between items-center mb-6">
+          {/* SOL GRUP: Logo ve Başlık */}
+          <div className="flex items-center gap-3">
+            {/* mb-4 kaldırıldı ve boyut başlıkla dengeli olması için w-10 h-10 yapıldı */}
+            <img src="/logo.svg" alt="Todo App Logo" className="w-10 h-10" />
+            <h1 className="text-4xl font-bold text-blue-400">Tasks</h1>
+          </div>
+
+          {/* SAĞ GRUP: Profil ve Çıkış Butonları */}
+          <div className="flex items-center gap-3">
+            {/* Profil sayfası eklendiğinde butonu/linki buraya gelecek */}
+            {/* <button className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-bold">Profile</button> */}
+
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
+            >
+              Log Out
+            </button>
+          </div>
         </div>
 
         <TaskInput />

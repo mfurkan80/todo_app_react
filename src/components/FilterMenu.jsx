@@ -1,6 +1,6 @@
 const FilterMenu = ({ filter, setFilter }) => {
   return (
-    <div className="flex gap-2 mb-6 w-full max-w-md justify-center bg-gray-800 p-1 rounded-lg">
+    <div className="flex gap-2 mb-6 w-full max-w-md mx-auto justify-center bg-gray-800 p-1 rounded-lg">
       <button
         onClick={() => setFilter("all")}
         className={`flex-1 py-2 rounded-md transition-all text-sm font-medium ${
