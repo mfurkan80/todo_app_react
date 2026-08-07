@@ -1,204 +1,110 @@
-import { useState } from "react";
-import { useNavigate, useLoaderData } from "react-router";
-import axios from "axios";
+import express from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import db from "../config/db.js";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const router = express.Router();
 
-export const profileLoader = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/api/profile`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err)
+      return res.status(403).json({ message: "Invalid or expired token." });
+    req.user = user;
+    next();
+  });
+};
+
+// GET: Sadece email'i çekiyoruz
+router.get("/", authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const sql = "SELECT email FROM users WHERE id = ?";
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) return res.status(500).json({ message: "Internal server error." });
+    if (results.length === 0)
+      return res.status(404).json({ message: "User not found." });
+
+    res.status(200).json(results[0]);
+  });
+});
+
+// PUT: Email ve/veya Şifre güncelliyoruz
+router.put("/", authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  const { email, currentPassword, newPassword } = req.body;
+
+  // 1. Durum: Kullanıcı şifresini de değiştirmek istiyor
+  if (newPassword) {
+    if (!currentPassword) {
+      return res
+        .status(400)
+        .json({ message: "Current password is required to change password." });
+    }
+
+    db.query(
+      "SELECT password FROM users WHERE id = ?",
+      [userId],
+      async (err, results) => {
+        if (err) return res.status(500).json({ message: "Database error." });
+
+        const user = results[0];
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+        if (!isMatch) {
+          return res
+            .status(400)
+            .json({ message: "Incorrect current password." });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        const updateSql =
+          "UPDATE users SET email = ?, password = ? WHERE id = ?";
+        db.query(updateSql, [email, hashedPassword, userId], (updateErr) => {
+          if (updateErr) {
+            // Eğer email veritabanında zaten varsa:
+            if (updateErr.code === "ER_DUP_ENTRY") {
+              return res
+                .status(400)
+                .json({ message: "This email is already in use." });
+            }
+            console.error("Database update error: ", updateErr);
+            return res
+              .status(500)
+              .json({ message: "Failed to update profile." });
+          }
+          res.status(200).json({ email });
+        });
       },
-    });
-    return response.data;
-  } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch user data.",
     );
   }
-};
+  // 2. Durum: Sadece email değiştiriliyor
+  else {
+    const sql = "UPDATE users SET email = ? WHERE id = ?";
+    db.query(sql, [email, userId], (err) => {
+      if (err) {
+        // Eğer email veritabanında zaten varsa:
+        if (err.code === "ER_DUP_ENTRY") {
+          return res
+            .status(400)
+            .json({ message: "This email is already in use." });
+        }
+        console.error("Database update error: ", err);
+        return res.status(500).json({ message: "Failed to update profile." });
+      }
+      res.status(200).json({ email });
+    });
+  }
+});
 
-const Profile = () => {
-  const navigate = useNavigate();
-  const initialUser = useLoaderData();
-
-  const [user, setUser] = useState(initialUser);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    email: initialUser.email,
-    currentPassword: "",
-    newPassword: "",
-  });
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState(null);
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setMessage(null);
-
-    try {
-      // BURASI DÜZELTİLDİ: localhost yerine API_URL formatı eklendi
-      const response = await axios.put(`${API_URL}/api/profile`, formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      setUser({ email: response.data.email });
-      setIsEditing(false);
-      setFormData({
-        email: response.data.email,
-        currentPassword: "",
-        newPassword: "",
-      });
-
-      setMessage({ type: "success", text: "Profile updated successfully." });
-    } catch (error) {
-      console.error("Error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "An error occurred while updating your profile.";
-
-      setMessage({ type: "error", text: errorMessage });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center py-10">
-      <div className="w-full max-w-xl px-4 flex flex-col gap-6">
-        <div className="flex items-center gap-4 mb-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-gray-400 hover:text-white transition-colors font-medium"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-
-        <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-4">
-            Profile Details
-          </h2>
-
-          {message && (
-            <div
-              className={`p-4 rounded-md mb-6 border ${
-                message.type === "error"
-                  ? "bg-red-500/10 border-red-500/50 text-red-400"
-                  : "bg-green-500/10 border-green-500/50 text-green-400"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm text-gray-400 font-medium">
-                Email Address
-              </label>
-              {isEditing ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="bg-gray-900 border border-gray-700 rounded-md p-3 text-white focus:outline-none focus:border-blue-500"
-                />
-              ) : (
-                <div className="bg-gray-900/50 border border-transparent rounded-md p-3 text-white">
-                  {user.email}
-                </div>
-              )}
-            </div>
-
-            {isEditing && (
-              <div className="flex flex-col gap-4 mt-2 pt-4 border-t border-gray-700">
-                <p className="text-sm text-gray-400 mb-1">
-                  Leave password fields blank if you don't want to change it.
-                </p>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-gray-400 font-medium">
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    value={formData.currentPassword}
-                    onChange={handleInputChange}
-                    placeholder="Enter current password"
-                    className="bg-gray-900 border border-gray-700 rounded-md p-3 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm text-gray-400 font-medium">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleInputChange}
-                    placeholder="Enter new password"
-                    className="bg-gray-900 border border-gray-700 rounded-md p-3 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="mt-6 flex justify-end gap-3">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setMessage(null);
-                      setFormData({
-                        email: user.email,
-                        currentPassword: "",
-                        newPassword: "",
-                      });
-                    }}
-                    disabled={isSaving}
-                    className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 font-medium transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors disabled:opacity-50"
-                  >
-                    {isSaving ? "Saving..." : "Save Changes"}
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    setMessage(null);
-                  }}
-                  className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors"
-                >
-                  Edit Profile
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Profile;
+export default router;
