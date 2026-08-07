@@ -40,6 +40,13 @@ const App = () => {
             {/* <button className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-bold">Profile</button> */}
 
             <button
+              onClick={() => navigate("/profile")}
+              className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-bold text-white transition-colors"
+            >
+              Profile
+            </button>
+
+            <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm font-bold"
             >
