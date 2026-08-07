@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export const profileLoader = async () => {
   try {
-    const response = await axios.get(`${API_URL}/profile`, {
+    const response = await axios.get(`${API_URL}/api/profile`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -32,8 +32,6 @@ const Profile = () => {
   });
 
   const [isSaving, setIsSaving] = useState(false);
-
-  // Bildirimleri tutacağımız yeni state (type: 'success' veya 'error', text: 'mesaj içeriği')
   const [message, setMessage] = useState(null);
 
   const handleInputChange = (e) => {
@@ -42,18 +40,15 @@ const Profile = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    setMessage(null); // Her yeni kaydetme işleminde eski mesajı temizle
+    setMessage(null);
 
     try {
-      const response = await axios.put(
-        "http://localhost:3000/api/profile",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+      // BURASI DÜZELTİLDİ: localhost yerine API_URL formatı eklendi
+      const response = await axios.put(`${API_URL}/api/profile`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      );
+      });
 
       setUser({ email: response.data.email });
       setIsEditing(false);
@@ -63,7 +58,6 @@ const Profile = () => {
         newPassword: "",
       });
 
-      // Başarılı olursa alert yerine state'i yeşil mesaj için güncelle
       setMessage({ type: "success", text: "Profile updated successfully." });
     } catch (error) {
       console.error("Error:", error);
@@ -71,7 +65,6 @@ const Profile = () => {
         error.response?.data?.message ||
         "An error occurred while updating your profile.";
 
-      // Hata olursa alert yerine state'i kırmızı hata mesajı için güncelle
       setMessage({ type: "error", text: errorMessage });
     } finally {
       setIsSaving(false);
@@ -95,7 +88,6 @@ const Profile = () => {
             Profile Details
           </h2>
 
-          {/* MESAJ KUTUSU BURAYA EKLENDİ */}
           {message && (
             <div
               className={`p-4 rounded-md mb-6 border ${
@@ -109,7 +101,6 @@ const Profile = () => {
           )}
 
           <div className="flex flex-col gap-5">
-            {/* Email Alanı */}
             <div className="flex flex-col gap-1">
               <label className="text-sm text-gray-400 font-medium">
                 Email Address
@@ -129,7 +120,6 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Sadece Düzenleme Modunda Görünen Şifre Değiştirme Alanı */}
             {isEditing && (
               <div className="flex flex-col gap-4 mt-2 pt-4 border-t border-gray-700">
                 <p className="text-sm text-gray-400 mb-1">
@@ -166,14 +156,13 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Aksiyon Butonları */}
             <div className="mt-6 flex justify-end gap-3">
               {isEditing ? (
                 <>
                   <button
                     onClick={() => {
                       setIsEditing(false);
-                      setMessage(null); // İptal edildiğinde mesajı da gizle
+                      setMessage(null);
                       setFormData({
                         email: user.email,
                         currentPassword: "",
@@ -197,7 +186,7 @@ const Profile = () => {
                 <button
                   onClick={() => {
                     setIsEditing(true);
-                    setMessage(null); // Yeni düzenlemeye başlarken eski mesajı temizle
+                    setMessage(null);
                   }}
                   className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors"
                 >
