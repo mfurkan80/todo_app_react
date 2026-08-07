@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate, useLoaderData } from "react-router";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const profileLoader = async () => {
   try {
-    const response = await axios.get("http://localhost:3000/api/profile", {
+    const response = await axios.get(`${API_URL}/profile`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
